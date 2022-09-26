@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dad Jokes</title>
+    <style>
+      *,
+      *::after,
+      *::before {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+      }
+
+      html {
+        font-size: 16px;
+        width: 100%;
+      }
+      body {
+        width: 100%;
+        height: 100vh;
+        overflow: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        width: 80vw;
+        height: 80vh;
+      }
+      .container-heading {
+        text-align: center;
+        font-weight: bolder;
+      }
+
+      .container-main {
+        width: 100%;
+        height: 70%;
+        border: 1px solid black;
+        margin: 2em 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        color: black;
+        padding: 1em;
+      }
+
+      .container-main.error {
+        color: red;
+      }
+
+      .container-btn {
+        width: 50%;
+        background-color: blueviolet;
+        color: white;
+        text-align: center;
+        padding: 5px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+      }
+
+      .container-btn:active {
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="container-heading">Wanna Hear Dad Jokes?</h1>
+      <div class="container-main">Click the button below to hear dad jokes</div>
+      <button class="container-btn" id="clickable">
+        Click Me for giggles!
+      </button>
+    </div>
+
+    <script>
+      let contentArea = document.querySelector(".container-main");
+      let btn = document.querySelector(".container-btn");
+
+      document.addEventListener("click", function (event) {
+        if (event.target.id == "clickable") {
+          promisify();
+        }
+      });
+
+      async function promisify() {
+        try {
+          let abortcontroller = new AbortController();
+          let interval = setTimeout(function () {
+            abortcontroller.abort();
+          }, 1500);
+
+          let res = await fetch("https://icanhazdadjoke.com/", {
+            signal: abortcontroller.signal,
+            headers: { Accept: "application/json" },
+          });
+          res = await res.json();
+          if (res.status == 200) {
+            clearInterval(interval);
+            contentArea.classList.remove("error");
+            contentArea.innerText = res.joke.trim();
+          }
+        } catch (e) {
+          if (e.name == "AbortError") {
+            contentArea.classList.remove("error");
+            contentArea.innerText = "Loading...";
+            setTimeout(function () {
+              contentArea.innerText = "API error: Click below button again";
+              contentArea.classList.add("error");
+            }, 1000);
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
